@@ -12,6 +12,7 @@ pandas = "*"
 numpy = "*"
 pillow = "*"
 h5py = "*"
+notebook = "*"
 
 [requires]
 python_version = "3.7"
