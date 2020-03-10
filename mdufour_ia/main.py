@@ -12,28 +12,48 @@ from models.VggModel import VggModel, get_model
 
 
 # Global variables
-BATCH_SIZE = 50
+BATCH_SIZE = 32
 NB_EPOCHS = 100
 IMG_WIDTH = 96
 IMG_HEIGHT = 96
 TRAIN_DATA_PATH = 'chest_xray/train'
 TEST_DATA_PATH = 'chest_xray/test'
 VAL_DATA_PATH = 'chest_xray/val'
-CLASS_NAMES = ['NORMAL', 'PNEUMONIA']
+CLASS_NAMES = ['NORMAL', 'BACTERIA', 'VIRUS']
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 VERBOSE = 1
 MODEL_NAME = 'vgg16'
 
 METRICS = [
   tf.keras.metrics.BinaryAccuracy(name='accuracy', dtype=tf.float32),
-  # tf.keras.metrics.TruePositives(name='true_positives', dtype=tf.float32),
-  # tf.keras.metrics.FalsePositives(name='false_positives', dtype=tf.float32),
-  # tf.keras.metrics.TrueNegatives(name='true_negatives', dtype=tf.float32),
-  # tf.keras.metrics.FalseNegatives(name='false_negatives', dtype=tf.float32), 
-  # tf.keras.metrics.Precision(name='precision', dtype=tf.float32),
-  # tf.keras.metrics.Recall(name='recall', dtype=tf.float32),
-  # tf.keras.metrics.AUC(name='auc', dtype=tf.float32),
+  tf.keras.metrics.TruePositives(name='true_positives', dtype=tf.float32),
+  tf.keras.metrics.FalsePositives(name='false_positives', dtype=tf.float32),
+  tf.keras.metrics.TrueNegatives(name='true_negatives', dtype=tf.float32),
+  tf.keras.metrics.FalseNegatives(name='false_negatives', dtype=tf.float32), 
+  tf.keras.metrics.Precision(name='precision', dtype=tf.float32),
+  tf.keras.metrics.Recall(name='recall', dtype=tf.float32),
+  tf.keras.metrics.AUC(name='auc', dtype=tf.float32),
 ]
+
+
+def separate_pneumonia():
+  """
+  Little script to sperate types of pneumonia into 2 differents datasets, for train, test and val.
+  """
+  datas_types = ['train', 'test', 'val']
+  for dtype in datas_types:
+    # generate VIRUS and BACTERIA dirs
+    os.mkdir('chest_xray/{}/VIRUS'.format(dtype), 0o755)
+    os.mkdir('chest_xray/{}/BACTERIA'.format(dtype), 0o755)
+    with os.scandir('chest_xray/{}/PNEUMONIA'.format(dtype)) as entries:
+      for entry in entries:
+        if entry.name.find('virus') > -1: # this is a virus
+          print('Move virus img.')
+          shutil.copy2(entry.path, 'chest_xray/{}/VIRUS/'.format(dtype))
+        else:
+          print('Move bacteria img.')
+          shutil.copy2(entry.path, 'chest_xray/{}/BACTERIA/'.format(dtype))
+
 
 def save_model(model=None, model_name='vgg16'):
   """
@@ -95,25 +115,34 @@ def main():
   else:
     # Get the model
     model = get_model(
-      model='vgg',
+      model='vgg16',
       nodes=16,
       optimizer='adam',
-      loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+      loss=tf.keras.losses.BinaryCrossentropy(),
       hidden_activation='relu',
-      final_activation='softmax',
-      metrics=METRICS
+      final_activation='sigmoid',
+      metrics=None
     )
 
   # To get the nb of steps and how many images we got
   nb_normal_tr = len(os.listdir('{}/NORMAL'.format(TRAIN_DATA_PATH)))
-  nb_pneumonia_tr = len(os.listdir('{}/PNEUMONIA'.format(TRAIN_DATA_PATH)))
+  nb_bacteria_tr = len(os.listdir('{}/BACTERIA'.format(TRAIN_DATA_PATH)))
+  nb_virus_tr = len(os.listdir('{}/VIRUS'.format(TRAIN_DATA_PATH)))
   nb_normal_val = len(os.listdir('{}/NORMAL'.format(VAL_DATA_PATH)))
-  nb_pneumonia_val = len(os.listdir('{}/PNEUMONIA'.format(VAL_DATA_PATH)))
-  total_train = nb_normal_tr + nb_pneumonia_tr
-  total_val = nb_normal_val + nb_pneumonia_val
+  nb_bacteria_val = len(os.listdir('{}/BACTERIA'.format(VAL_DATA_PATH)))
+  nb_virus_val = len(os.listdir('{}/VIRUS'.format(VAL_DATA_PATH)))
+  total_train = nb_normal_tr + nb_bacteria_tr + nb_virus_tr
+  total_val = nb_normal_val + nb_bacteria_val + nb_virus_val
 
   # Our datas generators
-  train_image_generator = ImageDataGenerator(rescale=1./255) # Generator for our training data
+  train_image_generator = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=45,
+    width_shift_range=.15,
+    height_shift_range=.15,
+    horizontal_flip=True,
+    zoom_range=0.5
+  ) # Generator for our training data
   validation_image_generator = ImageDataGenerator(rescale=1./255) # Generator for our validation data
   test_image_generator = ImageDataGenerator(rescale=1./255) # Generator for our validation data
 
@@ -134,33 +163,38 @@ def main():
     class_mode='binary'
   )
 
-  if not modelLoaded:
-    # Train the model
-    model.fit(
-      train_data_gen,
-      callbacks=get_callbacks(),
-      steps_per_epoch=total_train // BATCH_SIZE,
-      epochs=NB_EPOCHS,
-      validation_data=val_data_gen,
-      validation_steps=total_val // BATCH_SIZE
-    )
-    save_model(model, 'vgg16')
+  # Train the model
+  model.fit(
+    train_data_gen,
+    callbacks=get_callbacks(),
+    steps_per_epoch=total_train // BATCH_SIZE,
+    epochs=NB_EPOCHS,
+    validation_data=val_data_gen,
+    validation_steps=total_val // BATCH_SIZE
+  )
+  save_model(model, 'vgg16')
 
-    model.summary()
+  model.summary()
 
   # Use a testing model to display metrics
-  # testing_model = tf.keras.Sequential([model, tf.keras.layers.Softmax()])
-  # testing_model.compile(
-  #   loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
-  #   optimizer='adam',
-  #   metrics=METRICS
-  # )
+  testing_model = tf.keras.Sequential([model, tf.keras.layers.Softmax()])
+  testing_model.compile(
+    loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+    optimizer='adam',
+    metrics=METRICS
+  )
 
   # Display metrics for testing purpose
-  print('Normal/Pneumonia vgg trained model : ')
-  results = model.evaluate(test_data_gen)
-  for name, value in zip(model.metrics_names, results):
+  print('Normal, Virus or Bacteria vgg trained model : ')
+  results = testing_model.evaluate(test_data_gen)
+  for name, value in zip(testing_model.metrics_names, results):
     print(f'{name} : {value}')
+
+
+  # predictions
+  predictions = model.predict(test_data_gen)
+  for predict in predictions:
+    print('Predictions : ', predict)
 
 if __name__ == "__main__":
   main()

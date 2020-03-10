@@ -36,7 +36,7 @@ class VggModel(tf.keras.Model):
     return self.pred_layer(x)
 
 
-def get_model(model='vgg', nodes=16, optimizer='adam', loss='binary_crossentropy', hidden_activation='linear', final_activation='softmax', metrics='accuracy'):
+def get_model(model='vgg16', nodes=16, optimizer='adam', loss='binary_crossentropy', hidden_activation='linear', final_activation='softmax', metrics='accuracy'):
   """
   Return a basic model
   """
@@ -44,19 +44,18 @@ def get_model(model='vgg', nodes=16, optimizer='adam', loss='binary_crossentropy
   # model = VggModel(name='vgg_model', nodes=nodes, hidden_activation=hidden_activation, final_activation=final_activation)
 
   model = tf.keras.Sequential([
-    layers.Conv2D(16, 3, padding='same', activation='relu', input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
+    layers.Conv2D(16, 3, padding='same', activation=hidden_activation, input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
     layers.MaxPooling2D(),
-    layers.Dropout(0.25),
-    layers.Conv2D(32, 3, padding='same', activation='relu'),
+    # layers.Dropout(0.25),
+    layers.Conv2D(32, 3, padding='same', activation=hidden_activation),
     layers.MaxPooling2D(),
-    layers.Dropout(0.25),
-    layers.Conv2D(64, 3, padding='same', activation='relu'),
+    # layers.Dropout(0.25),
+    layers.Conv2D(64, 3, padding='same', activation=hidden_activation),
     layers.MaxPooling2D(),
-    layers.Dropout(0.25),
+    # layers.Dropout(0.25),
     layers.Flatten(),
-    layers.Dense(512, activation='relu'),
-    layers.Dropout(0.25),
-    layers.Dense(1)
+    layers.Dense(512, activation=final_activation),
+    layers.Dense(3)
   ])
 
   model.compile(optimizer=optimizer,
