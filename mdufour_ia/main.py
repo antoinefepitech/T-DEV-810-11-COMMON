@@ -5,6 +5,8 @@ import pandas as pd
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import csv
+import cv2
 
 
 # Our model
@@ -34,6 +36,48 @@ METRICS = [
   tf.keras.metrics.Recall(name='recall', dtype=tf.float32),
   tf.keras.metrics.AUC(name='auc', dtype=tf.float32),
 ]
+
+def generate_full_dataset():
+  if not os.path.isdir('datasets'):
+    os.makedirs('datasets')
+  
+  dirs = ['test', 'train', 'val']
+
+  # prepare labels
+  labels = ['type']
+  for i in range(0, 96):
+    for j in range(0,96):
+      labels.append('{}x{}'.format(i, j))
+
+  # scan directorys
+  for directory in dirs:
+    dataset_path = 'datasets/dataset-{}.csv'.format(directory)
+    try:
+      f = open(dataset_path)
+      f.close()
+      print('Dataset already exists.')
+    except FileNotFoundError:
+      print('Generate full dataset with xray images... Please wait it can take a while.')
+      with open(dataset_path, 'w+', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        # write first column labels
+        writer.writerow(labels)
+
+        i = 0
+        for label in CLASS_NAMES:
+          print('Scan {}/{}'.format(directory, label))
+          with os.scandir('chest_xray/{}/{}'.format(directory, label)) as entries:
+            for entry in entries:
+              # load the image with opencv
+              img = cv2.imread(entry.path)
+              # resize it
+              resized_img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+              # 3D numpy array to 1D
+              one_dim_img = resized_img.ravel()
+              # write the row
+              writer.writerow([label, *list(one_dim_img)])
+              print('Row {} added.'.format(i))
+              i = i + 1
 
 
 def separate_pneumonia():
@@ -73,7 +117,7 @@ def get_callbacks(model_size='small'):
 
 def get_label(file_path):
   """
-  Get the label of a file - Can be NORMAL or PNEUMONIA
+  Get the label of a file - Can be NORMAL, VIRUS OR BACTERIE
   """
   # convert the path to a list of path components
   parts = tf.strings.split(file_path, os.path.sep)
@@ -163,6 +207,8 @@ def main():
     class_mode='binary'
   )
 
+  generate_full_dataset(train_data_gen)
+
   # Train the model
   model.fit(
     train_data_gen,
@@ -190,12 +236,12 @@ def main():
   for name, value in zip(testing_model.metrics_names, results):
     print(f'{name} : {value}')
 
-
   # predictions
   predictions = model.predict(test_data_gen)
   for predict in predictions:
     print('Predictions : ', predict)
 
 if __name__ == "__main__":
-  main()
+  generate_full_dataset()
+  # main()
   exit()

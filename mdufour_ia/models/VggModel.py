@@ -14,14 +14,20 @@ class VggModel(tf.keras.Model):
   """
   def __init__(self, name=None, nodes=1, hidden_activation='linear', final_activation='softmax'):
     super(VggModel, self).__init__(name=name)
+    # first conv
     self.conv_1 = layers.Conv2D(16, 3, padding='same', activation=hidden_activation, input_shape=(IMG_HEIGHT, IMG_WIDTH , 3))
     self.pooling_1 = layers.MaxPooling2D()
+    # second conv
     self.conv_2 = layers.Conv2D(32, 3, padding='same', activation=hidden_activation)
     self.pooling_2 = layers.MaxPooling2D()
+    # thrid conv
     self.conv_3 = layers.Conv2D(64, 3, padding='same', activation=hidden_activation)
     self.pooling_3 = layers.MaxPooling2D()
+    # flatten layer
     self.flatten_1 = layers.Flatten()
+    # dense layer
     self.dense_1 = layers.Dense(512, activation=hidden_activation)
+    # pref layer
     self.pred_layer = layers.Dense(1, activation=final_activation, name='predictions')
 
   def call(self, inputs):
@@ -41,22 +47,22 @@ def get_model(model='vgg16', nodes=16, optimizer='adam', loss='binary_crossentro
   Return a basic model
   """
 
-  # model = VggModel(name='vgg_model', nodes=nodes, hidden_activation=hidden_activation, final_activation=final_activation)
+  model = VggModel(name='vgg_model', nodes=nodes, hidden_activation=hidden_activation, final_activation=final_activation)
 
-  model = tf.keras.Sequential([
-    layers.Conv2D(16, 3, padding='same', activation=hidden_activation, input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
-    layers.MaxPooling2D(),
-    # layers.Dropout(0.25),
-    layers.Conv2D(32, 3, padding='same', activation=hidden_activation),
-    layers.MaxPooling2D(),
-    # layers.Dropout(0.25),
-    layers.Conv2D(64, 3, padding='same', activation=hidden_activation),
-    layers.MaxPooling2D(),
-    # layers.Dropout(0.25),
-    layers.Flatten(),
-    layers.Dense(512, activation=final_activation),
-    layers.Dense(3)
-  ])
+  # model = tf.keras.Sequential([
+  #   layers.Conv2D(16, 3, padding='same', activation=hidden_activation, input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
+  #   layers.MaxPooling2D(),
+  #   # layers.Dropout(0.25),
+  #   layers.Conv2D(32, 3, padding='same', activation=hidden_activation),
+  #   layers.MaxPooling2D(),
+  #   # layers.Dropout(0.25),
+  #   layers.Conv2D(64, 3, padding='same', activation=hidden_activation),
+  #   layers.MaxPooling2D(),
+  #   # layers.Dropout(0.25),
+  #   layers.Flatten(),
+  #   layers.Dense(512, activation=final_activation),
+  #   layers.Dense(3)
+  # ])
 
   model.compile(optimizer=optimizer,
                 loss=loss,
