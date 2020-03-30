@@ -45,9 +45,10 @@ def generate_full_dataset():
 
   # prepare labels
   labels = ['type']
-  for i in range(0, 96):
-    for j in range(0,96):
-      labels.append('{}x{}'.format(i, j))
+  for i in range(0, 96): # first dim
+    for j in range(0, 96): # second dim
+      for k in range(0, 96): # channel
+        labels.append('{}x{}x{}'.format(i, j, k))
 
   # scan directorys
   for directory in dirs:
@@ -242,6 +243,6 @@ def main():
     print('Predictions : ', predict)
 
 if __name__ == "__main__":
-  generate_full_dataset()
-  # main()
+  # generate_full_dataset()
+  main()
   exit()
