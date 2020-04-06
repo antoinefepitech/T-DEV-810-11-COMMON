@@ -14,7 +14,7 @@ class ResNetTypeI(tf.keras.Model):
   """
   A ResNetTypeI Model - Use of basic bloc layers (conv2D + batch normalization + conv2D + batch normalization)
   """
-  def __init__(self, name=None, nodes, final_activation='softmax'):
+  def __init__(self, nodes, name=None, final_activation='softmax'):
     super(ResNetTypeI, self).__init__(name=name)
     # first conv
     self.conv_1 = layers.Conv2D(16, 3, padding='same', input_shape=(IMG_HEIGHT, IMG_WIDTH , 3), strides=2)
@@ -48,7 +48,7 @@ class ResNetTypeII(tf.keras.Model):
   """
   A ResNetTypeII Model - Use of bottleneck layers (conv2D + batch normalization + conv2D + batch normalization)
   """
-  def __init__(self, name=None, nodes, final_activation='softmax'):
+  def __init__(self, nodes, name=None, final_activation='softmax'):
     super(ResNetTypeII, self).__init__(name=name)
     # first conv
     self.conv_1 = layers.Conv2D(16, 3, padding='same', input_shape=(IMG_HEIGHT, IMG_WIDTH , 3), strides=2)
@@ -78,28 +78,28 @@ class ResNetTypeII(tf.keras.Model):
     x = self.avg_pool(x)
     return self.pred_layer(x)
 
-def get_model(model='resnet_18', optimizer='adam', loss='binary_crossentropy', final_activation='softmax', metrics='accuracy'):
+def get_model_resnet(model='resnet_18', optimizer='adam', loss='binary_crossentropy', final_activation='softmax', metrics='accuracy'):
   """
   Return a basic model
   """
-  model = None
-
   if model == 'resnet_18':
     model = resnet_18(final_activation=final_activation)
-  elif model == 'resnet_34':
-    model = resnet_34(final_activation=final_activation)
-
-  model.compile(optimizer=optimizer,
+    model.compile(optimizer=optimizer,
                 loss=loss,
                 metrics=metrics)
-  return model
-
+    return model
+  elif model == 'resnet_34':
+    model = resnet_34(final_activation=final_activation)
+    model.compile(optimizer=optimizer,
+                loss=loss,
+                metrics=metrics)
+    return model
 
 def resnet_18(final_activation):
-    return ResNetTypeI(name='resnet1_18', nodes=[2, 2, 2, 2], final_activation=final_activation)
+    return ResNetTypeI(nodes=[2, 2, 2, 2], name='resnet1_18', final_activation=final_activation)
 
 
 def resnet_34(final_activation):
-    return ResNetTypeI(name='resnet1_34', nodes=[3, 4, 6, 3], final_activation=final_activation)
+    return ResNetTypeI(nodes=[3, 4, 6, 3], name='resnet1_34', final_activation=final_activation)
 
 

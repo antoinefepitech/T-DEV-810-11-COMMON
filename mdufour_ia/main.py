@@ -10,7 +10,8 @@ import cv2
 
 
 # Our model
-from models.VggModel import VggModel, get_model
+from models.VggModel import get_model_vgg
+from models.ResNetModel import get_model_resnet
 
 
 # Global variables
@@ -24,7 +25,7 @@ VAL_DATA_PATH = 'chest_xray/val'
 CLASS_NAMES = ['NORMAL', 'BACTERIA', 'VIRUS']
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 VERBOSE = 1
-MODEL_NAME = 'vgg16'
+MODEL_NAME = 'resnet_18'
 
 METRICS = [
   tf.keras.metrics.BinaryAccuracy(name='accuracy', dtype=tf.float32),
@@ -107,7 +108,7 @@ def save_model(model=None, model_name='vgg16'):
   model.save('saved_model/{}/model.h5'.format(MODEL_NAME))
   print("Model saved successfully.")
 
-def get_callbacks(model_size='small'):
+def get_callbacks():
   """
   Define the callbacks for the ML model
   """
@@ -159,13 +160,20 @@ def main():
     print('Model successfully loaded.')
   else:
     # Get the model
-    model = get_model(
-      model='vgg16',
-      nodes=16,
+    # model = get_model_vgg(
+    #   model=MODEL_NAME,
+    #   nodes=16,
+    #   optimizer='adam',
+    #   loss=tf.keras.losses.BinaryCrossentropy(),
+    #   hidden_activation='relu',
+    #   final_activation='sigmoid',
+    #   metrics=None
+    # )
+    model = get_model_resnet(
+      model=MODEL_NAME,
       optimizer='adam',
       loss=tf.keras.losses.BinaryCrossentropy(),
-      hidden_activation='relu',
-      final_activation='sigmoid',
+      final_activation='softmax',
       metrics=None
     )
 
@@ -208,8 +216,6 @@ def main():
     class_mode='binary'
   )
 
-  generate_full_dataset(train_data_gen)
-
   # Train the model
   model.fit(
     train_data_gen,
@@ -219,7 +225,7 @@ def main():
     validation_data=val_data_gen,
     validation_steps=total_val // BATCH_SIZE
   )
-  save_model(model, 'vgg16')
+  save_model(model, 'resnet_18')
 
   model.summary()
 
@@ -232,13 +238,13 @@ def main():
   )
 
   # Display metrics for testing purpose
-  print('Normal, Virus or Bacteria vgg trained model : ')
+  print('Normal, Virus or Bacteria resnet 18 trained model : ')
   results = testing_model.evaluate(test_data_gen)
   for name, value in zip(testing_model.metrics_names, results):
     print(f'{name} : {value}')
 
   # predictions
-  predictions = model.predict(test_data_gen)
+  predictions = testing_model.predict(test_data_gen)
   for predict in predictions:
     print('Predictions : ', predict)
 

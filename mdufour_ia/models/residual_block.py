@@ -14,7 +14,7 @@ class BasicBlock(layers.Layer):
     self.conv_b_2 = layers.Conv2D(filters=filter_num, kernel_size=(3, 3), strides=1, padding='same')
     self.bn_b_2 = layers.BatchNormalization()
     if stride != 1:
-      self.downsample = Sequential()
+      self.downsample = tf.keras.Sequential()
       self.downsample.add(layers.Conv2D(filters=filter_num, kernel_size=(1, 1), strides=stride))
       self.downsample.add(layers.BatchNormalization())
     else:
@@ -27,7 +27,8 @@ class BasicBlock(layers.Layer):
     x = tf.nn.relu(x)
     x = self.conv_b_2(x)
     x = self.bn_b_2(x)
-    output = tf.nn.relu(layers.add([residual, x]))
+    # print(residual)
+    output = tf.nn.relu(x)
     return output
 
 
@@ -44,7 +45,7 @@ class BottleNeck(layers.Layer):
     self.conv_b_3 = layers.Conv2D(filters=filter_num * 4, kernel_size=(1, 1), strides=1, padding='same')
     self.bn_b_3 = layers.BatchNormalization()
 
-    self.downsample = Sequential()
+    self.downsample = tf.keras.Sequential()
     self.downsample.add(layers.Conv2D(filters=filter_num * 4, kernel_size=(1, 1), strides=stride))
     self.downsample.add(layers.BatchNormalization())
 
@@ -66,7 +67,7 @@ def make_basic_block_layer(filter_num, blocks, stride=1):
   """
   Generate a block layer
   """
-  res_block = Sequential()
+  res_block = tf.keras.Sequential()
   res_block.add(BasicBlock(filter_num, stride=stride))
 
   for _ in range(1, blocks):
@@ -79,7 +80,7 @@ def make_bottleneck_layer(filter_num, blocks, stride=1):
   """
   Generate a bottleneck layer
   """
-  res_block = Sequential()
+  res_block = tf.keras.Sequential()
   res_block.add(BottleNeck(filter_num, stride=stride))
 
   for _ in range(1, blocks):

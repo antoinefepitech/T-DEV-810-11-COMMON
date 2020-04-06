@@ -42,7 +42,7 @@ class VggModel(tf.keras.Model):
     return self.pred_layer(x)
 
 
-def get_model(model='vgg16', nodes=16, optimizer='adam', loss='binary_crossentropy', hidden_activation='linear', final_activation='softmax', metrics='accuracy'):
+def get_model_vgg(model='vgg16', nodes=16, optimizer='adam', loss='binary_crossentropy', hidden_activation='linear', final_activation='softmax', metrics='accuracy'):
   """
   Return a basic model
   """
