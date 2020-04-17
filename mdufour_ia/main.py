@@ -157,6 +157,10 @@ def process_path(file_path):
   img = tf.io.read_file(file_path)
   img = decode_img(img)
   return img, label
+
+def get_label_predicted(predictions):
+  preds = list(predictions)
+  return CLASS_NAMES[preds.index(max(preds))]
   
 def main():
   """
@@ -256,7 +260,7 @@ def main():
   # predictions
   predictions = testing_model.predict(test_data_gen)
   for predict in predictions:
-    print('Predictions : ', predict)
+    print('Predictions : ', predict, 'Result :', get_label_predicted(predict))
 
   # save_model_h5(testing_model, 'vgg16')
 
