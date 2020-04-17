@@ -27,8 +27,7 @@ class BasicBlock(layers.Layer):
     x = tf.nn.relu(x)
     x = self.conv_b_2(x)
     x = self.bn_b_2(x)
-    # print(residual)
-    output = tf.nn.relu(x)
+    output = tf.nn.relu(layers.add([residual, x]))
     return output
 
 
