@@ -25,17 +25,17 @@ VAL_DATA_PATH = 'chest_xray/val'
 CLASS_NAMES = ['NORMAL', 'BACTERIA', 'VIRUS']
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 VERBOSE = 1
-MODEL_NAME = 'resnet_18'
+MODEL_NAME = 'vgg16'
 
 METRICS = [
   tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32),
-  # tf.keras.metrics.TruePositives(name='true_positives', dtype=tf.float32),
-  # tf.keras.metrics.FalsePositives(name='false_positives', dtype=tf.float32),
-  # tf.keras.metrics.TrueNegatives(name='true_negatives', dtype=tf.float32),
-  # tf.keras.metrics.FalseNegatives(name='false_negatives', dtype=tf.float32), 
-  # tf.keras.metrics.Precision(name='precision', dtype=tf.float32),
-  # tf.keras.metrics.Recall(name='recall', dtype=tf.float32),
-  # tf.keras.metrics.AUC(name='auc', dtype=tf.float32),
+  tf.keras.metrics.TruePositives(name='true_positives', dtype=tf.float32),
+  tf.keras.metrics.FalsePositives(name='false_positives', dtype=tf.float32),
+  tf.keras.metrics.TrueNegatives(name='true_negatives', dtype=tf.float32),
+  tf.keras.metrics.FalseNegatives(name='false_negatives', dtype=tf.float32), 
+  tf.keras.metrics.Precision(name='precision', dtype=tf.float32),
+  tf.keras.metrics.Recall(name='recall', dtype=tf.float32),
+  tf.keras.metrics.AUC(name='auc', dtype=tf.float32),
 ]
 
 def generate_full_dataset():
@@ -171,22 +171,22 @@ def main():
     print('Model successfully loaded.')
   else:
     # Get the model
-    # model = get_model_vgg(
-    #   model=MODEL_NAME,
-    #   nodes=16,
-    #   optimizer='adam',
-    #   loss=tf.keras.losses.BinaryCrossentropy(),
-    #   hidden_activation='relu',
-    #   final_activation='sigmoid',
-    #   metrics=None
-    # )
-    model = get_model_resnet(
+    model = get_model_vgg(
       model=MODEL_NAME,
+      nodes=16,
       optimizer='adam',
-      loss=tf.keras.losses.CategoricalCrossentropy(),
-      final_activation='softmax',
-      metrics=METRICS
+      loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+      hidden_activation='relu',
+      final_activation='sigmoid',
+      metrics=None
     )
+    # model = get_model_resnet(
+    #   model=MODEL_NAME,
+    #   optimizer='adam',
+    #   loss=tf.keras.losses.CategoricalCrossentropy(),
+    #   final_activation='sigmoid',
+    #   metrics=METRICS
+    # )
 
   # To get the nb of steps and how many images we got
   nb_normal_tr = len(os.listdir('{}/NORMAL'.format(TRAIN_DATA_PATH)))
@@ -214,17 +214,17 @@ def main():
     directory=TRAIN_DATA_PATH,
     shuffle=True,
     target_size=(IMG_HEIGHT, IMG_WIDTH),
-    class_mode='binary'
+    class_mode='categorical'
   )
   val_data_gen = validation_image_generator.flow_from_directory(batch_size=BATCH_SIZE,
     directory=VAL_DATA_PATH,
     target_size=(IMG_HEIGHT, IMG_WIDTH),
-    class_mode='binary'
+    class_mode='categorical'
   )
   test_data_gen = test_image_generator.flow_from_directory(batch_size=BATCH_SIZE,
     directory=TEST_DATA_PATH,
     target_size=(IMG_HEIGHT, IMG_WIDTH),
-    class_mode='binary'
+    class_mode='categorical'
   )
 
   # Train the model
@@ -239,26 +239,26 @@ def main():
 
   model.summary()
 
-  # # Use a testing model to display metrics
-  # testing_model = tf.keras.Sequential([model, tf.keras.layers.Softmax()])
-  # testing_model.compile(
-  #   loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
-  #   optimizer='adam',
-  #   metrics=METRICS
-  # )
+  # Use a testing model to display metrics
+  testing_model = tf.keras.Sequential([model, tf.keras.layers.Softmax()])
+  testing_model.compile(
+    loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
+    optimizer='adam',
+    metrics=METRICS
+  )
 
   # Display metrics for testing purpose
-  print('Normal, Virus or Bacteria resnet 18 trained model : ')
-  results = model.evaluate(test_data_gen)
-  for name, value in zip(model.metrics_names, results):
+  print('Normal, Virus or Bacteria {} trained model : '.format(MODEL_NAME))
+  results = testing_model.evaluate(test_data_gen, verbose=0)
+  for name, value in zip(testing_model.metrics_names, results):
     print(f'{name} : {value}')
 
   # predictions
-  predictions = model.predict(test_data_gen)
+  predictions = testing_model.predict(test_data_gen)
   for predict in predictions:
     print('Predictions : ', predict)
 
-  save_model_tf(model, 'resnet_18')
+  # save_model_h5(testing_model, 'vgg16')
 
 if __name__ == "__main__":
   # generate_full_dataset()

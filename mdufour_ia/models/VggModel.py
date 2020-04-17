@@ -47,22 +47,22 @@ def get_model_vgg(model='vgg16', nodes=16, optimizer='adam', loss='binary_crosse
   Return a basic model
   """
 
-  model = VggModel(name='vgg_model', nodes=nodes, hidden_activation=hidden_activation, final_activation=final_activation)
+  # model = VggModel(name='vgg_model', nodes=nodes, hidden_activation=hidden_activation, final_activation=final_activation)
 
-  # model = tf.keras.Sequential([
-  #   layers.Conv2D(16, 3, padding='same', activation=hidden_activation, input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
-  #   layers.MaxPooling2D(),
-  #   # layers.Dropout(0.25),
-  #   layers.Conv2D(32, 3, padding='same', activation=hidden_activation),
-  #   layers.MaxPooling2D(),
-  #   # layers.Dropout(0.25),
-  #   layers.Conv2D(64, 3, padding='same', activation=hidden_activation),
-  #   layers.MaxPooling2D(),
-  #   # layers.Dropout(0.25),
-  #   layers.Flatten(),
-  #   layers.Dense(512, activation=final_activation),
-  #   layers.Dense(3)
-  # ])
+  model = tf.keras.Sequential([
+    layers.Conv2D(16, 3, padding='same', activation=hidden_activation, input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
+    layers.MaxPooling2D(),
+    layers.Dropout(0.1),
+    layers.Conv2D(32, 3, padding='same', activation=hidden_activation),
+    layers.MaxPooling2D(),
+    layers.Dropout(0.1),
+    layers.Conv2D(64, 3, padding='same', activation=hidden_activation),
+    layers.MaxPooling2D(),
+    layers.Dropout(0.1),
+    layers.Flatten(),
+    layers.Dense(512, activation=final_activation),
+    layers.Dense(3)
+  ])
 
   model.compile(optimizer=optimizer,
                 loss=loss,

@@ -20,13 +20,13 @@ class BasicBlock(layers.Layer):
     else:
       self.downsample = lambda x: x
 
-  def call(self, inputs, **kwargs):
+  def call(self, inputs, training=None, **kwargs):
     residual = self.downsample(inputs)
     x = self.conv_b_1(inputs)
-    x = self.bn_b_1(x)
+    x = self.bn_b_1(x, training=training)
     x = tf.nn.relu(x)
     x = self.conv_b_2(x)
-    x = self.bn_b_2(x)
+    x = self.bn_b_2(x, training=training)
     output = tf.nn.relu(layers.add([residual, x]))
     return output
 
@@ -48,16 +48,16 @@ class BottleNeck(layers.Layer):
     self.downsample.add(layers.Conv2D(filters=filter_num * 4, kernel_size=(1, 1), strides=stride))
     self.downsample.add(layers.BatchNormalization())
 
-  def call(self, inputs, **kwargs):
+  def call(self, inputs, training=None, **kwargs):
     residual = self.downsample(inputs)
     x = self.conv_b_1(inputs)
-    x = self.bn_b_1(x)
+    x = self.bn_b_1(x, training=training)
     x = tf.nn.relu(x)
     x = self.conv_b_2(x)
-    x = self.bn_b_2(x)
+    x = self.bn_b_2(x, training=training)
     x = tf.nn.relu(x)
     x = self.conv_b_3(x)
-    x = self.bn_b_3(x)
+    x = self.bn_b_3(x, training=training)
     output = tf.nn.relu(layers.add([residual, x]))
     return output
 
