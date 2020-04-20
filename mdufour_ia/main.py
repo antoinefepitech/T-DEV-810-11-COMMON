@@ -25,7 +25,7 @@ VAL_DATA_PATH = 'chest_xray/val'
 CLASS_NAMES = ['NORMAL', 'BACTERIA', 'VIRUS']
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 VERBOSE = 1
-MODEL_NAME = 'vgg16'
+MODEL_NAME = 'resnet_18'
 
 METRICS = [
   tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32),
@@ -175,22 +175,24 @@ def main():
     print('Model successfully loaded.')
   else:
     # Get the model
-    model = get_model_vgg(
-      model=MODEL_NAME,
-      nodes=16,
-      optimizer='adam',
-      loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-      hidden_activation='relu',
-      final_activation='sigmoid',
-      metrics=None
-    )
-    # model = get_model_resnet(
-    #   model=MODEL_NAME,
-    #   optimizer='adam',
-    #   loss=tf.keras.losses.CategoricalCrossentropy(),
-    #   final_activation='sigmoid',
-    #   metrics=METRICS
-    # )
+    if MODEL_NAME == 'vgg16':
+      model = get_model_vgg(
+        model=MODEL_NAME,
+        nodes=16,
+        optimizer='adam',
+        loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+        hidden_activation='relu',
+        final_activation='sigmoid',
+        metrics=None
+      )
+    elif MODEL_NAME == 'resnet_18' or MODEL_NAME == 'resnet_34':
+      model = get_model_resnet(
+        model=MODEL_NAME,
+        optimizer='adam',
+        loss=tf.keras.losses.CategoricalCrossentropy(),
+        final_activation='softmax',
+        metrics=None
+      )
 
   # To get the nb of steps and how many images we got
   nb_normal_tr = len(os.listdir('{}/NORMAL'.format(TRAIN_DATA_PATH)))
@@ -262,7 +264,7 @@ def main():
   for predict in predictions:
     print('Predictions : ', predict, 'Result :', get_label_predicted(predict))
 
-  # save_model_h5(testing_model, 'vgg16')
+  # save_model_h5(testing_model, 'resnet_18')
 
 if __name__ == "__main__":
   # generate_full_dataset()
