@@ -30,6 +30,7 @@ def basic_block(filter_num, stride=1):
     layers.BatchNormalization(),
     layers.Conv2D(filters=filter_num, kernel_size=(3, 3), strides=1, padding='same'),
     layers.BatchNormalization()
+    layers.Dropout(0.1),
   ])
 
   if stride != 1:
@@ -64,7 +65,8 @@ def bottleneck_layer(filter_num, stride=1):
     layers.Conv2D(filters=filter_num, kernel_size=(3, 3), strides=stride, padding='same'),
     layers.BatchNormalization(),
     layers.Conv2D(filters=filter_num * 4, kernel_size=(1, 1), strides=1, padding='same'),
-    layers.BatchNormalization()
+    layers.BatchNormalization(),
+    layers.Dropout(0.1)
   ])
 
   return tf.keras.Sequential([

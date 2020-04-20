@@ -7,7 +7,7 @@ import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import csv
 import cv2
-
+import matplotlib.pyplot as plt
 
 # Our model
 from models.VggModel import get_model_vgg
@@ -25,10 +25,9 @@ VAL_DATA_PATH = 'chest_xray/val'
 CLASS_NAMES = ['NORMAL', 'BACTERIA', 'VIRUS']
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 VERBOSE = 1
-MODEL_NAME = 'resnet_18'
+MODEL_NAME = 'vgg16'
 
 METRICS = [
-  tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32),
   tf.keras.metrics.TruePositives(name='true_positives', dtype=tf.float32),
   tf.keras.metrics.FalsePositives(name='false_positives', dtype=tf.float32),
   tf.keras.metrics.TrueNegatives(name='true_negatives', dtype=tf.float32),
@@ -159,8 +158,54 @@ def process_path(file_path):
   return img, label
 
 def get_label_predicted(predictions):
+  """
+  Return the label for a given prediction array
+  """
   preds = list(predictions)
   return CLASS_NAMES[preds.index(max(preds))]
+
+def generate_html(history, model, results, predictions):
+  """
+  Function that generate an html page and open it in the browser
+  - history is the history for the model train steps
+  - results is the metrics results get from the train step
+  - predictions is the predictive result gotten for the test datas
+  """
+  # Generate the graph for accuracy, loss, val_accuracy, val_loss
+  history_dict = history.history
+
+  acc = history_dict['accuracy']
+  val_acc = history_dict['val_accuracy']
+  loss = history_dict['loss']
+  val_loss = history_dict['val_loss']
+
+  epochs_range = range(NB_EPOCHS)
+
+  plt.figure(figsize=(8, 8))
+  plt.subplot(1, 2, 1)
+  plt.plot(epochs_range, acc, label='Training Accuracy')
+  plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+  plt.legend(loc='lower right')
+  plt.title('Training and Validation Accuracy')
+
+  plt.subplot(1, 2, 2)
+  plt.plot(epochs_range, loss, label='Training Loss')
+  plt.plot(epochs_range, val_loss, label='Validation Loss')
+  plt.legend(loc='upper right')
+  plt.title('Training and Validation Loss')
+  plt.yscale('log')
+
+
+  # Display metrics for testing purpose
+  print('Normal, Virus or Bacteria {} trained model : '.format(MODEL_NAME))
+  for name, value in zip(model.metrics_names, results):
+    print(f'{name} : {value}')
+
+  # Display predictions
+  for predict in predictions:
+    print('Predictions : ', predict, 'Result :', get_label_predicted(predict))
+
+  plt.show()
   
 def main():
   """
@@ -183,7 +228,7 @@ def main():
         loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
         hidden_activation='relu',
         final_activation='sigmoid',
-        metrics=None
+        metrics=[tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32)]
       )
     elif MODEL_NAME == 'resnet_18' or MODEL_NAME == 'resnet_34':
       model = get_model_resnet(
@@ -191,7 +236,7 @@ def main():
         optimizer='adam',
         loss=tf.keras.losses.CategoricalCrossentropy(),
         final_activation='softmax',
-        metrics=None
+        metrics=[tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32)]
       )
 
   # To get the nb of steps and how many images we got
@@ -234,7 +279,7 @@ def main():
   )
 
   # Train the model
-  model.fit(
+  history = model.fit(
     train_data_gen,
     callbacks=get_callbacks(),
     steps_per_epoch=total_train // BATCH_SIZE,
@@ -253,17 +298,13 @@ def main():
     metrics=METRICS
   )
 
-  # Display metrics for testing purpose
-  print('Normal, Virus or Bacteria {} trained model : '.format(MODEL_NAME))
+  # Evalutate the model with test datas
   results = testing_model.evaluate(test_data_gen, verbose=0)
-  for name, value in zip(testing_model.metrics_names, results):
-    print(f'{name} : {value}')
 
-  # predictions
+  # Predict the test datas
   predictions = testing_model.predict(test_data_gen)
-  for predict in predictions:
-    print('Predictions : ', predict, 'Result :', get_label_predicted(predict))
 
+  generate_html(history, testing_model, results, predictions)
   # save_model_h5(testing_model, 'resnet_18')
 
 if __name__ == "__main__":

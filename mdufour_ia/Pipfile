@@ -14,6 +14,7 @@ pillow = "*"
 h5py = "*"
 notebook = "*"
 opencv-python = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.7"
