@@ -22,5 +22,5 @@ def get_classification_model():
         tf.keras.layers.Dense(units=NUM_CLASSES, activation="softmax")
     ])
     model.compile(loss='categorical_crossentropy',
-                  optimizer='rmsprop', metrics=['accuracy'])
+                  optimizer='adam', metrics=['accuracy'])
     return model
