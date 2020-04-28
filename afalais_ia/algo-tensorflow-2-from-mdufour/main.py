@@ -191,8 +191,8 @@ def generate_html(history, model, results, predictions):
     # Generate the graph for accuracy, loss, val_accuracy, val_loss
     history_dict = history.history
 
-    acc = history_dict['auc']
-    val_acc = history_dict['val_auc']
+    acc = history_dict['accuracy']
+    val_acc = history_dict['val_accuracy']
     loss = history_dict['loss']
     val_loss = history_dict['val_loss']
 
