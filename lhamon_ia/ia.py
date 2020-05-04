@@ -44,11 +44,20 @@ print('Val pneumonia images :')
 print(number_val_pneumo)
 
 # Variables
-batch_size = 100
-epochs = 2
-IMG_HEIGHT = 150
-IMG_WIDTH = 150
+batch_size = 32
+epochs = 4
+IMG_HEIGHT = 96
+IMG_WIDTH = 96
 
+METRICS = [
+  tf.keras.metrics.TruePositives(name='true_positives', dtype=tf.float32),
+  tf.keras.metrics.FalsePositives(name='false_positives', dtype=tf.float32),
+  tf.keras.metrics.TrueNegatives(name='true_negatives', dtype=tf.float32),
+  tf.keras.metrics.FalseNegatives(name='false_negatives', dtype=tf.float32), 
+  tf.keras.metrics.Precision(name='precision', dtype=tf.float32),
+  tf.keras.metrics.Recall(name='recall', dtype=tf.float32),
+  tf.keras.metrics.AUC(name='auc', dtype=tf.float32),
+]
 
 train_image_generator = ImageDataGenerator(rescale=1./255) 
 val_image_generator = ImageDataGenerator(rescale=1./255) 
@@ -64,19 +73,29 @@ val_gen = val_image_generator.flow_from_directory(batch_size=batch_size,
                                                        target_size=(IMG_HEIGHT, IMG_WIDTH),
                                                        class_mode='binary') 
 
-
-log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+def plotImages(images_arr):
+    fig, axes = plt.subplots(1, 5, figsize=(20,20))
+    axes = axes.flatten()
+    for img, ax in zip( images_arr, axes):
+        ax.imshow(img)
+        ax.axis('off')
+    plt.tight_layout()
+    plt.show()
 
 
 # Create the model
 model = Sequential([
-    Conv2D(64, 3, padding='same', activation='relu', input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
+    Conv2D(16, 3, padding='same', activation='linear', input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
     MaxPooling2D(),
-    Conv2D(128, 3, padding='same', activation='relu'),
+    Dropout(0.1),
+    Conv2D(32, 3, padding='same', activation='linear'),
     MaxPooling2D(),
+    Dropout(0.1),
+    Conv2D(64, 3, padding='same', activation='linear'),
+    MaxPooling2D(),
+    Dropout(0.1),
     Flatten(),
-    Dense(512, activation='relu'),
+    Dense(512, activation='softmax'),
     Dense(1)
 ])
 
@@ -84,17 +103,16 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-model.summary()
-
 # Train the model
-history = model.fit_generator(
+history = model.fit(
     train_gen,
     steps_per_epoch=total_train // batch_size,
     epochs=epochs,
     validation_data=val_gen,
     validation_steps=total_val // batch_size,
-    callbacks=[tensorboard_callback]
 )
+
+model.summary()
 
 # See the results
 accuracy = history.history['accuracy']
