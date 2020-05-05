@@ -9,7 +9,7 @@ Vous trouverez les datasets équilibrés à cette adresse : [https://drive.googl
 
 ## Comment lancer le projet ?
 
-Télécharger les datasets équilibirés (dataset_2_classes + dataset_3_classes) et les mettre à la racine du projet. Le dataset_2_classes correspond à un dataset équilibré NORMAL/PNEUMONIA, le dataset_3_classes correspond à un dataset équilibré NORMAL/VIRUS/BACTERIA.
+Télécharger le dossier **dataset** du google drive (comprenant dataset_2_classes + dataset_3_classes) et le mettre à la racine du projet. Le dataset_2_classes correspond à un dataset équilibré NORMAL/PNEUMONIA, le dataset_3_classes correspond à un dataset équilibré NORMAL/VIRUS/BACTERIA.
 
 ---
 
@@ -27,7 +27,9 @@ La cellule 4 correspond à un _VGG16_, la cellule 5 correspond à un _ResNet18_ 
 Choisir un modèle en éxécutant sa cellule correspondante. Puis lancer la toute dernière cellule du notebook.
 
 cellule 4 -> get_model_vgg_16(...)
+
 cellule 5 -> get_model_resnet_18(...)
+
 cellule 6 -> get_model_resnet_34(...)
 
 Voici l'ordre d'éxécution : 1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 4/5/6 (au choix), 14.
