@@ -22,6 +22,7 @@ VAL_DATA_PATH = 'dataset_3_classes/val'
 CLASS_NAMES = ['NORMAL', 'BACTERIA', 'VIRUS']
 # AUTOTUNE = tf.data.experimental.AUTOTUNE
 VERBOSE = 1
+MODEL_NAME = "vgg16"
 
 METRICS = [
     tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32),
