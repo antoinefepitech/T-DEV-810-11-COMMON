@@ -12,7 +12,6 @@ Pipfile.lock
 # C extensions
 *.so
 
-logs/
 
 # Distribution / packaging
 .Python
