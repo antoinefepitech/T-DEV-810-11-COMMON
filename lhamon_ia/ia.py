@@ -45,11 +45,12 @@ print(number_val_pneumo)
 
 # Variables
 batch_size = 32
-epochs = 4
+epochs = 100
 IMG_HEIGHT = 96
 IMG_WIDTH = 96
 
 METRICS = [
+  tf.keras.metrics.BinaryAccuracy(name='accuracy', dtype=tf.float32),
   tf.keras.metrics.TruePositives(name='true_positives', dtype=tf.float32),
   tf.keras.metrics.FalsePositives(name='false_positives', dtype=tf.float32),
   tf.keras.metrics.TrueNegatives(name='true_negatives', dtype=tf.float32),
@@ -85,13 +86,13 @@ def plotImages(images_arr):
 
 # Create the model
 model = Sequential([
-    Conv2D(16, 3, padding='same', activation='linear', input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
+    Conv2D(16, 3, padding='same', activation='relu', input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
     MaxPooling2D(),
     Dropout(0.1),
-    Conv2D(32, 3, padding='same', activation='linear'),
+    Conv2D(32, 3, padding='same', activation='relu'),
     MaxPooling2D(),
     Dropout(0.1),
-    Conv2D(64, 3, padding='same', activation='linear'),
+    Conv2D(64, 3, padding='same', activation='relu'),
     MaxPooling2D(),
     Dropout(0.1),
     Flatten(),
