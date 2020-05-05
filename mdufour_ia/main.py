@@ -20,14 +20,20 @@ NB_EPOCHS = 100
 IMG_WIDTH = 96
 IMG_HEIGHT = 96
 TRAIN_DATA_PATH = 'chest_xray/train'
+# switch test and validation data because we've too few validation images
 TEST_DATA_PATH = 'chest_xray/test'
 VAL_DATA_PATH = 'chest_xray/val'
 CLASS_NAMES = ['NORMAL', 'BACTERIA', 'VIRUS']
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 VERBOSE = 1
-MODEL_NAME = 'vgg16'
+# vgg16 or resnet18 or resnet34
+MODEL_NAME = 'resnet34'
+OPTIMIZER = 'rmsprop'
+HIDDEN_ACTIVATION = 'relu'
+FINAL_ACTIVATION = 'sigmoid'
 
 METRICS = [
+  tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32),
   tf.keras.metrics.TruePositives(name='true_positives', dtype=tf.float32),
   tf.keras.metrics.FalsePositives(name='false_positives', dtype=tf.float32),
   tf.keras.metrics.TrueNegatives(name='true_negatives', dtype=tf.float32),
@@ -124,7 +130,7 @@ def get_callbacks():
   """
   return [
     # tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10),
-    tf.keras.callbacks.TensorBoard(os.path.join("logs/{}".format('vgg16'), datetime.datetime.now().strftime("%Y%m%d-%H%M%S")), histogram_freq=1)
+    tf.keras.callbacks.TensorBoard(os.path.join("logs/{}".format(MODEL_NAME), datetime.datetime.now().strftime("%Y%m%d-%H%M%S")), histogram_freq=1)
   ]
 
 def get_label(file_path):
@@ -164,13 +170,16 @@ def get_label_predicted(predictions):
   preds = list(predictions)
   return CLASS_NAMES[preds.index(max(preds))]
 
-def generate_html(history, model, results, predictions):
+def generate_results(history, model, results, predictions):
   """
   Function that generate an html page and open it in the browser
   - history is the history for the model train steps
   - results is the metrics results get from the train step
   - predictions is the predictive result gotten for the test datas
   """
+  folder_results_name = 'results/{}_{}'.format(MODEL_NAME, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+  os.mkdir(folder_results_name, 0o755)
+
   # Generate the graph for accuracy, loss, val_accuracy, val_loss
   history_dict = history.history
 
@@ -195,17 +204,29 @@ def generate_html(history, model, results, predictions):
   plt.title('Training and Validation Loss')
   plt.yscale('log')
 
+  # save figure
+  plt.savefig('{}/accuracy_and_loss.png'.format(folder_results_name))
+	# close matplotlib
+  plt.close()
 
-  # Display metrics for testing purpose
-  print('Normal, Virus or Bacteria {} trained model : '.format(MODEL_NAME))
-  for name, value in zip(model.metrics_names, results):
-    print(f'{name} : {value}')
+  with open('{}/results.txt'.format(folder_results_name), 'w+', newline='') as f:
+    # Write metrics for testing purpose
+    f.write('Normal, Virus or Bacteria {} trained model\n'.format(MODEL_NAME))
+    if MODEL_NAME == 'vgg16':
+      f.write('Optimizer : {}, Hidden activation : {}, Final activation : {}\n'.format(OPTIMIZER, HIDDEN_ACTIVATION, FINAL_ACTIVATION))
+    elif MODEL_NAME == 'resnet18' or MODEL_NAME == 'resnet34':
+      f.write('Optimizer : {}, Final activation : {}\n'.format(OPTIMIZER, FINAL_ACTIVATION))
+    f.write('--------------------------------------------------------------\n')
+    f.write('\n')
+    f.write('METRICS :\n')
+    for name, value in zip(model.metrics_names, results):
+      f.write(f'{name} : {value}\n')
+    f.write('\n')
+    # Write predictions
+    f.write('PREDICTIONS :\n')
+    for predict in predictions:
+      f.write('Predictions : {}, Result : {}\n'.format(str(predict), get_label_predicted(predict)))
 
-  # Display predictions
-  for predict in predictions:
-    print('Predictions : ', predict, 'Result :', get_label_predicted(predict))
-
-  plt.show()
   
 def main():
   """
@@ -224,18 +245,18 @@ def main():
       model = get_model_vgg(
         model=MODEL_NAME,
         nodes=16,
-        optimizer='adam',
+        optimizer=OPTIMIZER,
         loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-        hidden_activation='relu',
-        final_activation='sigmoid',
+        hidden_activation=HIDDEN_ACTIVATION,
+        final_activation=FINAL_ACTIVATION,
         metrics=[tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32)]
       )
-    elif MODEL_NAME == 'resnet_18' or MODEL_NAME == 'resnet_34':
+    elif MODEL_NAME == 'resnet18' or MODEL_NAME == 'resnet34':
       model = get_model_resnet(
         model=MODEL_NAME,
-        optimizer='adam',
+        optimizer=OPTIMIZER,
         loss=tf.keras.losses.CategoricalCrossentropy(),
-        final_activation='softmax',
+        final_activation=FINAL_ACTIVATION,
         metrics=[tf.keras.metrics.CategoricalAccuracy(name='accuracy', dtype=tf.float32)]
       )
 
@@ -304,7 +325,7 @@ def main():
   # Predict the test datas
   predictions = testing_model.predict(test_data_gen)
 
-  generate_html(history, testing_model, results, predictions)
+  generate_results(history, testing_model, results, predictions)
   # save_model_h5(testing_model, 'resnet_18')
 
 if __name__ == "__main__":

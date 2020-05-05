@@ -30,7 +30,6 @@ def basic_block(filter_num, stride=1):
     layers.BatchNormalization(),
     layers.Conv2D(filters=filter_num, kernel_size=(3, 3), strides=1, padding='same'),
     layers.BatchNormalization()
-    layers.Dropout(0.1),
   ])
 
   if stride != 1:
@@ -65,8 +64,7 @@ def bottleneck_layer(filter_num, stride=1):
     layers.Conv2D(filters=filter_num, kernel_size=(3, 3), strides=stride, padding='same'),
     layers.BatchNormalization(),
     layers.Conv2D(filters=filter_num * 4, kernel_size=(1, 1), strides=1, padding='same'),
-    layers.BatchNormalization(),
-    layers.Dropout(0.1)
+    layers.BatchNormalization()
   ])
 
   return tf.keras.Sequential([
@@ -88,6 +86,7 @@ def resnet_18(final_activation):
       make_basic_block_layer(filter_num=256, blocks=nodes[2], stride=2),
       make_basic_block_layer(filter_num=512, blocks=nodes[3], stride=2),
       layers.GlobalAveragePooling2D(),
+      # layers.Dropout(0.1),
       layers.Dense(units=NUM_CLASSES, activation=final_activation, name='predictions')
   ])
 
@@ -105,6 +104,7 @@ def resnet_34(final_activation):
     make_bottleneck_layer(filter_num=256, blocks=nodes[2], stride=2),
     make_bottleneck_layer(filter_num=512, blocks=nodes[3], stride=2),
     layers.GlobalAveragePooling2D(),
+    # layers.Dropout(0.1),
     layers.Dense(units=NUM_CLASSES, activation=final_activation, name='predictions')
   ])
 
@@ -115,13 +115,13 @@ def get_model_resnet(model='resnet_18', optimizer='adam', loss='binary_crossentr
   """
   Return a basic model
   """
-  if model == 'resnet_18':
+  if model == 'resnet18':
     model = resnet_18(final_activation=final_activation)
     model.compile(optimizer=optimizer,
                 loss=loss,
                 metrics=metrics)
     return model
-  elif model == 'resnet_34':
+  elif model == 'resnet34':
     model = resnet_34(final_activation=final_activation)
     model.compile(optimizer=optimizer,
                 loss=loss,
