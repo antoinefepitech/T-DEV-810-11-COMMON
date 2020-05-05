@@ -37,10 +37,3 @@ cellule 6 -> get_model_resnet_34(...)
 Voici l'ordre d'éxécution : 1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 4/5/6 (au choix), 14.
 
 ---
-
-#### Logs tensorboard
-Si vous avez Tensorboard d'installé sur votre ordinateur, il y a la possibilité de consulter les logs de nos différents entrainement avec la commande :
-
-```sh
-tensorboard --logdir=logs
-```
