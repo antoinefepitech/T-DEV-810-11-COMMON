@@ -20,7 +20,6 @@ NB_EPOCHS = 100
 IMG_WIDTH = 96
 IMG_HEIGHT = 96
 TRAIN_DATA_PATH = 'chest_xray/train'
-# switch test and validation data because we've too few validation images
 TEST_DATA_PATH = 'chest_xray/test'
 VAL_DATA_PATH = 'chest_xray/val'
 CLASS_NAMES = ['NORMAL', 'BACTERIA', 'VIRUS']
