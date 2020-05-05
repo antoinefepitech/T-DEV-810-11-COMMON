@@ -4,7 +4,7 @@
 
 Vous trouverez le dataset original à cette adresse : [https://epitechfr.sharepoint.com/sites/TDEV810/Documents%20partages/Forms/AllItems.aspx?viewid=421729e2%2D09be%2D4217%2D9fdb%2Dc0588b1b0933&id=%2Fsites%2FTDEV810%2FDocuments%20partages%2Fdatasets%2Fchest%5FXray](https://epitechfr.sharepoint.com/sites/TDEV810/Documents%20partages/Forms/AllItems.aspx?viewid=421729e2%2D09be%2D4217%2D9fdb%2Dc0588b1b0933&id=%2Fsites%2FTDEV810%2FDocuments%20partages%2Fdatasets%2Fchest%5FXray)
 
-Vous trouverez les datasets équilibrés à cette adresse : []()
+Vous trouverez les datasets équilibrés à cette adresse : [https://drive.google.com/drive/folders/1p0n10Z0DnoYeLq85-hs3-eMhx_QPa9Us?usp=sharing](https://drive.google.com/drive/folders/1p0n10Z0DnoYeLq85-hs3-eMhx_QPa9Us?usp=sharing)
 
 
 ## Comment lancer le projet ?
