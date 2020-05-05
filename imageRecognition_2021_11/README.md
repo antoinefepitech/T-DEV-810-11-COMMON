@@ -6,6 +6,8 @@ Vous trouverez le dataset original à cette adresse : [https://epitechfr.sharepo
 
 Vous trouverez les datasets équilibrés à cette adresse : [https://drive.google.com/drive/folders/1p0n10Z0DnoYeLq85-hs3-eMhx_QPa9Us?usp=sharing](https://drive.google.com/drive/folders/1p0n10Z0DnoYeLq85-hs3-eMhx_QPa9Us?usp=sharing)
 
+Lien vers le projet github, contenant les datasets, le code python, les notebooks, les résultats, les logs : [https://github.com/antoinefepitech/T-DEV-810-11-COMMON](https://github.com/antoinefepitech/T-DEV-810-11-COMMON)
+
 
 ## Comment lancer le projet ?
 
@@ -33,3 +35,12 @@ cellule 5 -> get_model_resnet_18(...)
 cellule 6 -> get_model_resnet_34(...)
 
 Voici l'ordre d'éxécution : 1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 4/5/6 (au choix), 14.
+
+---
+
+#### Logs tensorboard
+Si vous avez Tensorboard d'installer sur votre ordinateur, il y a la possibilité de consulter les logs de nos différents entrainement avec la commande :
+
+```sh
+tensorboard --logdir=logs
+```
